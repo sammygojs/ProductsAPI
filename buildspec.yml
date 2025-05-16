@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_TAG: "$CODEBUILD_GIT_BRANCH"
+    IMAGE_TAG: "dev"
 
 phases:
   pre_build:
