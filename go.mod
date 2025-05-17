@@ -1,4 +1,4 @@
-module bitbucket.org/oneiota/platform-technical-task
+module productApi
 
 go 1.22.0
 
