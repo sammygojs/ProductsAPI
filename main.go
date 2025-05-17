@@ -73,12 +73,12 @@ func loadProducts(fileName string) *Products{
 
 func getProducts(c *gin.Context) {
 	// lazy load
-	// if cachedProducts == nil{
-	// 	cachedProducts = loadProducts("products.json")
-	// }
+	if cachedProducts == nil{
+		cachedProducts = loadProducts("products.json")
+	}
 	
-	// c.JSON(http.StatusOK, cachedProducts)
-	c.JSON(http.StatusOK, &Products{})
+	c.JSON(http.StatusOK, cachedProducts)
+	// c.JSON(http.StatusOK, &Products{})
 }
 
 func getProduct(c *gin.Context) {
