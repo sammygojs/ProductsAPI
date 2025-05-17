@@ -1,3 +1,57 @@
+ProductsAPI – CI/CD Pipeline Setup
+This project uses a complete AWS-native pipeline to automatically build, test, and deploy your Go backend app when changes are pushed to the dev branch on GitHub.
+
+🔗 GitHub Integration
+The repo sammygojs/ProductsAPI is connected to AWS using CodeStar Connections.
+
+Any push to the dev branch triggers the pipeline.
+
+🐳 Docker + ECR
+Your app is containerized using a Dockerfile.
+
+AWS CodeBuild builds the Docker image.
+
+The image is pushed to Amazon ECR (products-api-dev repository).
+
+🚀 ECS Fargate Deployment
+An ECS cluster (go-products-cluster) runs your container using Fargate (serverless compute).
+
+When the image is pushed to ECR, CodeBuild automatically updates the ECS service (products-dev-service) with a new deployment.
+
+GitHub → AWS CodePipeline
+
+Your dev branch triggers CodePipeline via CodeStar.
+
+Pipeline → CodeBuild
+
+Pulls your code from GitHub
+
+Builds the Docker image
+
+Tags it as dev and latest
+
+Pushes it to ECR
+
+CodeBuild → ECS Fargate
+
+Updates the ECS service (products-dev-service)
+
+The service pulls the latest image and redeploys
+
+✅ No Manual Steps Needed
+
+Full automation from commit to live service
+
+| Service       | Name                    |
+| ------------- | ----------------------- |
+| GitHub Branch | `dev`                   |
+| ECR           | `products-api-dev`      |
+| ECS Cluster   | `go-products-cluster`   |
+| ECS Service   | `products-dev-service`  |
+| CodeBuild     | `products-build-dev`    |
+| CodePipeline  | `products-pipeline-dev` |
+
+
 # One iota Technical Tasks
 
 ## Solution Architecture Task
