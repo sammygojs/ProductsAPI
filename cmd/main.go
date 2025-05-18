@@ -7,9 +7,10 @@ import (
 
 func main() {
 	router := gin.Default()
-
+	
 	api := router.Group("/api")
 	{
+		fmt.Println("✅ Registered /api/query-db route")
 		api.GET("/query-db", handlers.QueryDB) // ✅ Correct group
 
 		products := api.Group("/products")
