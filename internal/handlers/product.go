@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
-	// "os"
-	// "encoding/json"
-
+	"strconv"
 	"github.com/gin-gonic/gin"
 	"ProductsAPI/internal/models"
 	"ProductsAPI/internal/utils"
@@ -28,12 +25,20 @@ func GetProduct(c *gin.Context) {
 	if cachedProducts == nil {
 		cachedProducts = utils.LoadProducts("products.json")
 	}
-	id := c.Param("productID")
+
+	idParam := c.Param("productID")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
+		return
+	}
+
 	for _, p := range cachedProducts.Products {
-		if fmt.Sprintf("%v", p.ID) == id {
+		if p.ID == id {
 			c.JSON(http.StatusOK, p)
 			return
 		}
 	}
+
 	c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 }
