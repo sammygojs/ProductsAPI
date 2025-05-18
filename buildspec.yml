@@ -5,24 +5,33 @@ env:
     IMAGE_TAG: "dev"
 
 phases:
+  install:
+    commands:
+      - echo "Using custom Go 1.22 Docker image, skipping runtime-versions"
+      - echo "Installing Go dependencies"
+      - go mod download
+
   pre_build:
     commands:
-      - echo Running unit tests...
+      - echo "Running unit tests..."
       - go test -v -cover ./...
-      - echo Logging into Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION |
-        docker login --username AWS --password-stdin $ECR_URI
-      - echo Tag = $IMAGE_TAG
+
+      - echo "Logging into Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
+
+      - echo "Tag = $IMAGE_TAG"
+
   build:
     commands:
-      - echo Building Docker image...
+      - echo "Building Docker image..."
       - docker build -t $ECR_URI:$IMAGE_TAG .
       - docker tag $ECR_URI:$IMAGE_TAG $ECR_URI:latest
       - docker push $ECR_URI:$IMAGE_TAG
       - docker push $ECR_URI:latest
+
   post_build:
     commands:
-      - echo Updating ECS service...
+      - echo "Deploying to ECS..."
       - >
         aws ecs update-service
         --cluster $ECS_CLUSTER

@@ -7,13 +7,17 @@ import (
 
 func main() {
 	router := gin.Default()
+
 	api := router.Group("/api")
 	{
-		p := api.Group("/products")
+		api.GET("/query-db", handlers.QueryDB) // ✅ Correct group
+
+		products := api.Group("/products")
 		{
-			p.GET("/", handlers.GetProducts)
-			p.GET("/:productID", handlers.GetProduct)
+			products.GET("/", handlers.GetProducts)
+			products.GET("/:productID", handlers.GetProduct)
 		}
 	}
+
 	router.Run(":8080")
 }
