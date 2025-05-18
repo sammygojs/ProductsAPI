@@ -3,11 +3,12 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"ProductsAPI/internal/handlers"
+	"fmt"
 )
 
 func main() {
 	router := gin.Default()
-	
+
 	api := router.Group("/api")
 	{
 		fmt.Println("✅ Registered /api/query-db route")
