@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_TAG: "dev"
+    IMAGE_TAG: "latest"
     GO_VERSION: "1.22.3"
 
 phases:
