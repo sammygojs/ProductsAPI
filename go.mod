@@ -1,4 +1,4 @@
-module productApi
+module ProductsAPI
 
 go 1.21
 
