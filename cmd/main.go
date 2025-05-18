@@ -20,6 +20,9 @@ func main() {
 			products.GET("/:productID", handlers.GetProduct)
 		}
 	}
+	for _, route := range router.Routes() {
+		fmt.Printf("📦 ROUTE REGISTERED: %s %s\n", route.Method, route.Path)
+	}
 
 	router.Run(":8080")
 }
