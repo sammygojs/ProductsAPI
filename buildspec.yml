@@ -3,22 +3,17 @@ version: 0.2
 env:
   variables:
     IMAGE_TAG: "latest"
-    GO_VERSION: "1.22.3"
 
 phases:
   install:
+    runtime-versions:
+      golang: 1.22
     commands:
-      - echo "Installing Go $GO_VERSION..."
-      - curl -OL https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz
-      - rm -rf /usr/local/go && tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
-      - export PATH=$PATH:/usr/local/go/bin
-      - go version
       - echo "Installing Go dependencies..."
       - go mod download
 
   pre_build:
     commands:
-      - export PATH=$PATH:/usr/local/go/bin
       - echo "Running unit tests..."
       # - go test -v -cover ./...
       - echo "Logging into Amazon ECR..."
@@ -27,7 +22,6 @@ phases:
 
   build:
     commands:
-      - export PATH=$PATH:/usr/local/go/bin
       - echo "Building Docker image..."
       - docker build -t $ECR_URI:$IMAGE_TAG .
       - docker tag $ECR_URI:$IMAGE_TAG $ECR_URI:latest
