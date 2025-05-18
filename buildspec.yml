@@ -3,12 +3,15 @@ version: 0.2
 env:
   variables:
     IMAGE_TAG: "dev"
+    GOROOT: "/usr/local/go"
+    PATH: "/usr/local/go/bin:$PATH"
 
 phases:
   install:
     commands:
       - echo "Using custom Go 1.22 Docker image, skipping runtime-versions"
       - echo "Installing Go dependencies"
+      - go version  # <-- Confirm the actual Go version in logs
       - go mod download
 
   pre_build:
@@ -17,7 +20,8 @@ phases:
       - go test -v -cover ./...
 
       - echo "Logging into Amazon ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION |
+        docker login --username AWS --password-stdin $ECR_URI
 
       - echo "Tag = $IMAGE_TAG"
 
