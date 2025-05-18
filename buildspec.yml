@@ -25,6 +25,8 @@ phases:
 
   build:
     commands:
+      - echo "Logging into Docker Hub"
+      - echo dckr_pat_fTfiR_r3mubFooKWzmlLx0ZWbZE | docker login -u sammyak18 --password-stdin
       - echo "Building Docker image..."
       - docker build -t $ECR_URI:$IMAGE_TAG .
       - docker tag $ECR_URI:$IMAGE_TAG $ECR_URI:latest
