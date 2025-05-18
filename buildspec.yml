@@ -3,27 +3,31 @@ version: 0.2
 env:
   variables:
     IMAGE_TAG: "dev"
+    GO_VERSION: "1.22.3"
 
 phases:
   install:
     commands:
-      - echo "Using custom Go 1.22 Docker image, skipping runtime-versions"
-      - cd $CODEBUILD_SRC_DIR
-      - echo "Installing Go dependencies"
+      - echo "Installing Go $GO_VERSION..."
+      - curl -OL https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz
+      - rm -rf /usr/local/go && tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
+      - export PATH=$PATH:/usr/local/go/bin
+      - go version
+      - echo "Installing Go dependencies..."
       - go mod download
 
   pre_build:
     commands:
-      - cd $CODEBUILD_SRC_DIR
+      - export PATH=$PATH:/usr/local/go/bin
       - echo "Running unit tests..."
-      # - go test -v -cover ./...
+      - go test -v -cover ./...
       - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
       - echo "Tag = $IMAGE_TAG"
 
   build:
     commands:
-      - cd $CODEBUILD_SRC_DIR
+      - export PATH=$PATH:/usr/local/go/bin
       - echo "Building Docker image..."
       - docker build -t $ECR_URI:$IMAGE_TAG .
       - docker tag $ECR_URI:$IMAGE_TAG $ECR_URI:latest
@@ -33,8 +37,4 @@ phases:
   post_build:
     commands:
       - echo "Deploying to ECS..."
-      - >
-        aws ecs update-service
-        --cluster $ECS_CLUSTER
-        --service $ECS_SERVICE
-        --force-new-deployment
+      - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
