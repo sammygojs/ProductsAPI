@@ -5,7 +5,7 @@ import (
 	"ProductsAPI/internal/models"
 )
 
-func applyTranslation(p *models.Product, locale string) {
+func ApplyTranslation(p *models.Product, locale string) {
 	// Normalize locale: "de-DE" → "de-de"
 	locale = strings.ToLower(locale)
 

@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func applyMembershipPricing(p *models.Product, isMember bool) {
+func ApplyMembershipPricing(p *models.Product, isMember bool) {
 	if !isMember {
 		return
 	}

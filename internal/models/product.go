@@ -26,6 +26,7 @@ type Products struct {
 type Product struct {
 	ID               int       `dynamodbav:"id" json:"id"`
 	SKU              string    `json:"sku"`
+	Name             string    `json:"name"`
 	ShortDescription *string   `json:"shortDescription"`
 	LongDescription  *string   `json:"longDescription"`
 	Brand            string    `json:"brand"`

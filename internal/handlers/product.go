@@ -18,16 +18,21 @@ func SetCachedProducts(p *models.Products) {
 }
 
 func GetProducts(c *gin.Context) {
-	// if cachedProducts == nil {
-	// 	if os.Getenv("USE_DYNAMO") == "true" {
-	// 		log.Println("📡 Loading products from DynamoDB...")
-	// 		cachedProducts = utils.LoadProductsFromDynamo()
-	// 	} else {
-	// 		log.Println("📄 Loading products from local products.json...")
-	// 		cachedProducts = utils.LoadProducts("products.json")
-	// 	}
-	// }
-	cachedProducts, err := utils.LoadProductsFromDynamo()
+	minPrice, _ := strconv.ParseFloat(c.Query("minPrice"), 64)
+	maxPrice, _ := strconv.ParseFloat(c.Query("maxPrice"), 64)
+	inStock := c.Query("inStock") == "true"
+	colourFilter := strings.ToLower(c.Query("colour"))
+
+	// ✅ Apply defaults
+	if minPrice == 0 {
+		minPrice = 0
+	}
+	if maxPrice == 0 {
+		maxPrice = 999999 // or whatever upper limit you want
+	}
+	
+	cachedProducts, err := utils.LoadProductsFromDynamo(minPrice, maxPrice, inStock, colourFilter)
+
 	if err != nil {
 		log.Printf("❌ Error loading products from Dynamo: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load products"})
@@ -47,10 +52,10 @@ func GetProducts(c *gin.Context) {
 	isMember := c.GetHeader("X-Member") == "true"
 
 	// Parse filter params
-	minPrice, _ := strconv.ParseFloat(c.Query("minPrice"), 64)
-	maxPrice, _ := strconv.ParseFloat(c.Query("maxPrice"), 64)
-	inStock := c.Query("inStock") == "true"
-	colourFilter := strings.ToLower(c.Query("colour"))
+	minPrice, _ = strconv.ParseFloat(c.Query("minPrice"), 64)
+	maxPrice, _ = strconv.ParseFloat(c.Query("maxPrice"), 64)
+	inStock = c.Query("inStock") == "true"
+	colourFilter = strings.ToLower(c.Query("colour"))
 
 	filtered := make([]*models.Product, 0, len(cachedProducts.Products))
 
@@ -61,14 +66,14 @@ func GetProducts(c *gin.Context) {
 		_ = json.Unmarshal(data, &clone)
 
 		if locale != "" {
-			applyTranslation(&clone, locale)
+			ApplyTranslation(&clone, locale)
 		}
-		applyMembershipPricing(&clone, isMember)
+		ApplyMembershipPricing(&clone, isMember)
 
-		// Apply filtering
-		if !productMatchesFilters(&clone, minPrice, maxPrice, inStock, colourFilter) {
-			continue
-		}
+		// // Apply filtering
+		// if !productMatchesFilters(&clone, minPrice, maxPrice, inStock, colourFilter) {
+		// 	continue
+		// }
 
 		filtered = append(filtered, &clone)
 	}
@@ -81,26 +86,21 @@ func GetProducts(c *gin.Context) {
 }
 
 func GetProduct(c *gin.Context) {
-	// if cachedProducts == nil {
-	// 	if os.Getenv("USE_DYNAMO") == "true" {
-	// 		log.Println("📡 Loading products from DynamoDB...")
-	// 		cachedProducts = utils.LoadProductsFromDynamo()
-	// 	} else {
-	// 		log.Println("📄 Loading products from local products.json...")
-	// 		cachedProducts = utils.LoadProducts("products.json")
-	// 	}
-	// }
-	cachedProducts, err := utils.LoadProductsFromDynamo()
-	if err != nil {
-		log.Printf("❌ Error loading products from Dynamo: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load products"})
-		return
-	}
-
 	idParam := c.Param("productID")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
+		return
+	}
+
+	product, err := utils.LoadSingleProductFromDynamo(id)
+	if err != nil {
+		log.Printf("❌ Error fetching product: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load product"})
+		return
+	}
+	if product == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
 
@@ -114,23 +114,62 @@ func GetProduct(c *gin.Context) {
 
 	isMember := c.GetHeader("X-Member") == "true"
 
-	for _, p := range cachedProducts.Products {
-		if p.ID == id {
+	var clone models.Product
+	data, _ := json.Marshal(product)
+	_ = json.Unmarshal(data, &clone)
 
-			var clone models.Product
-			data, _ := json.Marshal(p)
-			_ = json.Unmarshal(data, &clone)
-
-			if locale != "" {
-				applyTranslation(&clone, locale)
-			}
-			applyMembershipPricing(&clone, isMember)
-
-			c.JSON(http.StatusOK, clone)
-			return
-		}
+	if locale != "" {
+		ApplyTranslation(&clone, locale)
 	}
+	ApplyMembershipPricing(&clone, isMember)
 
-	c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+	c.JSON(http.StatusOK, clone)
 }
+
+
+
+// func GetProduct(c *gin.Context) {
+// 	cachedProducts, err := utils.LoadProductsFromDynamo()
+// 	if err != nil {
+// 		log.Printf("❌ Error loading products from Dynamo: %v", err)
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load products"})
+// 		return
+// 	}
+
+// 	idParam := c.Param("productID")
+// 	id, err := strconv.Atoi(idParam)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
+// 		return
+// 	}
+
+// 	locale := c.GetHeader("Accept-Language")
+// 	if locale == "" {
+// 		locale = c.Query("locale")
+// 	}
+// 	if len(locale) > 5 {
+// 		locale = locale[:5]
+// 	}
+
+// 	isMember := c.GetHeader("X-Member") == "true"
+
+// 	for _, p := range cachedProducts.Products {
+// 		if p.ID == id {
+
+// 			var clone models.Product
+// 			data, _ := json.Marshal(p)
+// 			_ = json.Unmarshal(data, &clone)
+
+// 			if locale != "" {
+// 				applyTranslation(&clone, locale)
+// 			}
+// 			applyMembershipPricing(&clone, isMember)
+
+// 			c.JSON(http.StatusOK, clone)
+// 			return
+// 		}
+// 	}
+
+// 	c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+// }
 
