@@ -2,10 +2,7 @@ package utils
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
-	"os"
 	"ProductsAPI/internal/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
