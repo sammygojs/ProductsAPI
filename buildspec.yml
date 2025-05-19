@@ -1,16 +1,12 @@
 version: 0.2
 
-# env:
-#   variables:
-#     IMAGE_REPO_NAME: my-app         # <-- your ECR repo name
-#     IMAGE_TAG: latest
-
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+      - echo $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
   build:
     commands:
       - echo Build started on `date`
