@@ -4,11 +4,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"ProductsAPI/internal/handlers"
 	"fmt"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 )
 
 func main() {
-	router := gin.Default()
+	err := godotenv.Load()
+    if err != nil {
+        log.Println("⚠️  No .env file found (using system env)")
+    }
 
+	// Just for confirmation
+	fmt.Println("USE_DYNAMO:", os.Getenv("USE_DYNAMO"))
+
+	router := gin.Default()
+	
+	router.GET("/healthz", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+	
 	api := router.Group("/api")
 	{
 		fmt.Println("✅ Registered /api/query-db route")
