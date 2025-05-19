@@ -1,9 +1,9 @@
 version: 0.2
 
-env:
-  variables:
-    IMAGE_REPO_NAME: my-app         # <-- your ECR repo name
-    IMAGE_TAG: latest
+# env:
+#   variables:
+#     IMAGE_REPO_NAME: my-app         # <-- your ECR repo name
+#     IMAGE_TAG: latest
 
 phases:
   pre_build:
