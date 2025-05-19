@@ -9,7 +9,6 @@ import (
 	"ProductsAPI/internal/utils"
 	"strings"
 	"log"
-	"os"
 )
 
 var cachedProducts *models.Products
@@ -28,7 +27,7 @@ func GetProducts(c *gin.Context) {
 	// 		cachedProducts = utils.LoadProducts("products.json")
 	// 	}
 	// }
-	cachedProducts, err = utils.LoadProductsFromDynamo()
+	cachedProducts, err := utils.LoadProductsFromDynamo()
 	if err != nil {
 		log.Printf("❌ Error loading products from Dynamo: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load products"})
@@ -91,7 +90,7 @@ func GetProduct(c *gin.Context) {
 	// 		cachedProducts = utils.LoadProducts("products.json")
 	// 	}
 	// }
-	cachedProducts, err = utils.LoadProductsFromDynamo()
+	cachedProducts, err := utils.LoadProductsFromDynamo()
 	if err != nil {
 		log.Printf("❌ Error loading products from Dynamo: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load products"})
