@@ -31,7 +31,7 @@ phases:
       - docker build --no-cache -t $ECR_URI:$IMAGE_TAG .
       - docker tag $ECR_URI:$IMAGE_TAG $ECR_URI:latest
       - docker push $ECR_URI:$IMAGE_TAG
-      - docker push $ECR_URI:latest
+      # - docker push $ECR_URI:latest
 
   post_build:
     commands:
